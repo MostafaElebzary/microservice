@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  auth-app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./src:/var/www
+    networks:
+      - microservices-network
+
+  auth-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_password
+    ports:
+      - "33061:3306"
+    volumes:
+      - auth-db-data:/var/lib/mysql
+    networks:
+      - microservices-network
+
+  auth-nginx:
+    image: nginx:alpine
+    ports:
+      - "8001:80"
+    volumes:
+      - ./src:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - auth-app
+    networks:
+      - microservices-network
+
+volumes:
+  auth-db-data:
+
+networks:
+  microservices-network:
+    driver: bridge

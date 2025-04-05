@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: docker/php/Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./auth-service/src:/var/www
+    networks:
+      - microservices-network
+
+  auth-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_password
+    ports:
+      - "33061:3306"
+    volumes:
+      - auth-db-data:/var/lib/mysql
+    networks:
+      - microservices-network
+
+  auth-nginx:
+    image: nginx:alpine
+    ports:
+      - "8001:80"
+    volumes:
+      - ./auth-service/src:/var/www
+      - ./auth-service/docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - auth-service
+    networks:
+      - microservices-network
+
+  address-service:
+    build:
+      context: ./address-service
+      dockerfile: docker/php/Dockerfile
+    ports:
+      - "9001:9000"
+    volumes:
+      - ./address-service/src:/var/www
+    networks:
+      - microservices-network
+    depends_on:
+      - rabbitmq
+
+  address-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: address_db
+      MYSQL_USER: address_user
+      MYSQL_PASSWORD: address_password
+    ports:
+      - "33062:3306"
+    volumes:
+      - address-db-data:/var/lib/mysql
+    networks:
+      - microservices-network
+
+  address-nginx:
+    image: nginx:alpine
+    ports:
+      - "8002:80"
+    volumes:
+      - ./address-service/src:/var/www
+      - ./address-service/docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - address-service
+    networks:
+      - microservices-network
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - microservices-network
+volumes:
+  auth-db-data:
+  address-db-data:
+
+networks:
+  microservices-network:
+    driver: bridge
