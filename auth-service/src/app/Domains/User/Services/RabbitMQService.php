@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace app\Domains\User\Services;
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -102,34 +102,4 @@ class RabbitMQService
             Log::error("RabbitMQ cleanup error: " . $e->getMessage());
         }
     }
-
-    public function consume(string $queue, callable $handler): void
-    {
-        $this->channel->queue_declare($queue, false, true, false, false);
-
-        $callback = function (AMQPMessage $msg) use ($handler) {
-            try {
-                // Pass the full message object to handler
-                $handler($msg);
-            } catch (Exception $e) {
-                Log::error("Message processing failed: " . $e->getMessage());
-                $msg->nack(); // Negative acknowledgment
-            }
-        };
-
-        $this->channel->basic_consume(
-            $queue,
-            '',
-            false,
-            false,
-            false,
-            false,
-            $callback
-        );
-
-        while ($this->channel->is_consuming()) {
-            $this->channel->wait();
-        }
-    }
-
 }
