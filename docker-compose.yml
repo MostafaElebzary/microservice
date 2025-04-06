@@ -85,6 +85,8 @@ services:
       - "15672:15672"
     networks:
       - microservices-network
+
+
 volumes:
   auth-db-data:
   address-db-data:
