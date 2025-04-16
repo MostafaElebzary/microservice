@@ -7,6 +7,9 @@ use App\Domains\User\DTOs\UserData;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
+use Madinastores\MadinastoresMicroserviceUtils\MadinastoresMicroserviceUtilsServiceProvider;
+use Madinastores\MadinastoresMicroserviceUtils\RabbitMQUtils;
+use Madinastores\MadinastoresMicroserviceUtils\Redis\RedisUtil;
 
 class AuthController extends Controller
 {
